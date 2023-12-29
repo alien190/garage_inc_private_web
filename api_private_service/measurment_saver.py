@@ -1,9 +1,6 @@
 import datetime
-import sys
-import time
-from datetime import timedelta
 import mysql.connector
-from .logger import Logger
+from .logger import get_logger
 from flask import current_app
 
 class MeasurmentSaver(object):
@@ -11,18 +8,18 @@ class MeasurmentSaver(object):
     def __init__(self):
         self.user = current_app.config['DB_USER']
         self.password = current_app.config['DB_PASSWORD']
-        self.logger = current_app.config['LOGGER']
+        self.logger = get_logger()
         self.mydb = None
 
     def __enter__(self):
-        #try:
-        #     self.mydb = mysql.connector.connect(host='localhost',
-        #                                user=self.user,
-        #                                password=self.password,
-        #                                database = 'monitor')
-        #     self.logger.log_info('Connected to DB')
-        # except Exception as error:
-        #     self.logger.log_error(str(error))     
+        try:
+            self.mydb = mysql.connector.connect(host='localhost',
+                                       user=self.user,
+                                       password=self.password,
+                                       database = 'monitor')
+            self.logger.log_info('Connected to DB')
+        except Exception as error:
+            self.logger.log_error(str(error))     
         return self.save_temperature
  
     def __exit__(self, *args):

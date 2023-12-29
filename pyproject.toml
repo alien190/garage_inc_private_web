@@ -1,0 +1,11 @@
+[project]
+name = "api_private_service"
+version = "1.0.0"
+description = "The API private service for WiFi sensors"
+dependencies = [
+    "flask",
+]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
