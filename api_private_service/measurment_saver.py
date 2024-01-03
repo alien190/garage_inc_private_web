@@ -20,7 +20,7 @@ class MeasurmentSaver(object):
             self.logger.log_info('Connected to DB')
         except Exception as error:
             self.logger.log_error(str(error))     
-        return self.save_temperature
+        return self
  
     def __exit__(self, *args):
         if self.mydb == None:
@@ -30,7 +30,7 @@ class MeasurmentSaver(object):
         self.mydb.close() 
         self.logger.log_info('DB connection is closed')
 
-    def save_temperature(self, sensor_id: int, temperature: float, humidity: float):
+    def get_date(self):
         date = datetime.datetime.now()
         self.logger.log_info('    date: {}'.format(date)) 
         m1 = datetime.datetime(year=date.year, month=date.month, day=date.day, hour=date.hour, minute=date.minute)
@@ -47,6 +47,10 @@ class MeasurmentSaver(object):
         self.logger.log_info(' H4 date: {} ({})'.format(h4, h4.timestamp()))
         d1 = datetime.datetime(year=date.year, month=date.month, day=date.day)
         self.logger.log_info(' D1 date: {} ({})'.format(d1, d1.timestamp()))
+        return m1, m5, m15, m30, h1, h4, d1
+
+    def save_temperature(self, sensor_id: int, temperature: float, humidity: float):
+        m1, m5, m15, m30, h1, h4, d1 = self.get_date()
         self.logger.log_info('Temperature: {}C, humidity: {}%'.format(temperature, humidity))
 
         if self.mydb == None:
@@ -81,6 +85,51 @@ class MeasurmentSaver(object):
                humidity,
                temperature,
                humidity)
+        
+        mycursor.execute(sql, val)
+        self.mydb.commit()
+
+        self.logger.log_info('-------------------------------------------------------------------------')
+
+    def save_air_flow(self, sensor_id: int, air_flow_rate: float, temperature: float, air_consumption:float):
+        m1, m5, m15, m30, h1, h4, d1 = self.get_date()
+        self.logger.log_info('Air flow rate: {}m/s, temperature: {}C, air consumption: {}m^3/hour'.format(air_flow_rate, temperature,air_consumption))
+
+        if self.mydb == None:
+            self.logger.log_error('Can not store to DB')
+            return
+
+        mycursor = self.mydb.cursor()
+
+        sql = """INSERT INTO airflows 
+                    (timestamp,
+                    sensor_id,
+                    m5,
+                    m15,
+                    m30,
+                    h1,
+                    h4,
+                    d1,
+                    air_flow_rate,
+                    temperature,
+                    air_consumption) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                ON DUPLICATE KEY UPDATE air_flow_rate = %s, temperature = %s, air_consumption = %s"""
+        
+        val = (m1.timestamp(), 
+               sensor_id,
+               m5.timestamp(),
+               m15.timestamp(),
+               m30.timestamp(),
+               h1.timestamp(),
+               h4.timestamp(),
+               d1.timestamp(),
+               air_flow_rate,
+               temperature,
+               air_consumption,
+               air_flow_rate,
+               temperature,
+               air_consumption)
         
         mycursor.execute(sql, val)
         self.mydb.commit()

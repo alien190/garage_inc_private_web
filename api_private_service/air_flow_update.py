@@ -1,18 +1,18 @@
 from flask import (Blueprint, request)
 import datetime
-from .temperature_dto import temperature_from_json
+from .air_flow_dto import air_flow_from_json
 from flask import current_app
 from .measurment_saver import MeasurmentSaver
 
-bp = Blueprint('temperature_update', __name__, url_prefix='/temperature_update')
+bp = Blueprint('air_flow_update', __name__, url_prefix='/air_flow_update')
 
 @bp.route('/', methods=['POST'])
 def register():
     try:    
-        temperature_dto = temperature_from_json(request.json)
+        aif_flow_dto = air_flow_from_json(request.json)
        
         with MeasurmentSaver() as saver:
-            saver.save_temperature(temperature_dto.sensor_id, temperature_dto.temperature, temperature_dto.humidity)  
+            saver.save_air_flow(aif_flow_dto.sensor_id,aif_flow_dto.air_flow_rate,aif_flow_dto.temperature,aif_flow_dto.air_consumption)  
 
         return 'Data was updated', 200
 

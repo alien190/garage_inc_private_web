@@ -28,4 +28,7 @@ def create_app(test_config=None):
     from . import temperature_update
     app.register_blueprint(temperature_update.bp)
 
+    from . import air_flow_update
+    app.register_blueprint(air_flow_update.bp)
+
     return app
